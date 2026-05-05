@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Doctors</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f6f9f8;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+    color: #007f3f;
+}
+h2 {
+    color: #007f3f;
+    margin-top: 28px;
+    text-align: center;
+}
+.report-btn {
+    display: block;
+    width: 250px;
+    margin: 20px auto;
+    padding: 14px;
+    text-align: center;
+    background-color: yellow;
+    font-weight: bold;
+    border-radius: 8px;
+    text-decoration: none;
+    color: black;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.report-btn:hover {
+    background-color: #ffd700;
+}
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+.card {
+    background-color: #007f3f;
+    color: white;
+    padding: 15px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    font-size: 15px;
+    transition: 0.2s;
+}
+.card:hover {
+    background-color: #00994d;
+    transform: translateY(-1px);
+}
+.card.active {
+    background-color: #004d26;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+th {
+    background-color: #007f3f;
+    color: white;
+}
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+.service-table {
+    display: none;
+    animation: fadeIn 0.2s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+</style>
+<script>
+function showService(id, button) {
+    document.querySelectorAll('.service-table').forEach(section => section.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+    document.querySelectorAll('.card').forEach(card => card.classList.remove('active'));
+    button.classList.add('active');
+}
+</script>
+</head>
+<body>
+<h1>Doctors</h1>
+<a class="report-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdGJ35L7zMF5FGyhgAGRTk0yvmB-V3ewnJzt8hiVwUX4Zg_Ow/viewform?usp=dialog" target="_blank" rel="noopener">Report</a>
+<div class="grid">
+<button class="card active" onclick="showService('general', this)">General Surgery</button>
+<button class="card" onclick="showService('colorectal', this)">Colorectal Surgery</button>
+<button class="card" onclick="showService('oncology', this)">Surgical Oncology</button>
+<button class="card" onclick="showService('breast', this)">Breast &amp; Endocrine Surgery</button>
+</div>
+
+<section id="general" class="service-table" style="display:block;">
+    <h2>General Surgery</h2>
+    <table class="directory-table">
+        <thead><tr><th>Junior Resident </th><th>Pager</th><th>Senior resident</th><th>Pager</th><th>SPECIALIST PHYSICIAN</th><th>Pager</th><th>Consultant </th><th>pager</th></tr></thead>
+        <tbody>
+<tr><td>DR TALIA</td><td>50923</td><td>DR RAZAN</td><td>545597003</td><td>Dr Amani</td><td>48385</td><td>Dr Alaa </td><td>45157</td></tr>
+<tr><td>DR KHALID</td><td>43220</td><td>DR ABDULR</td><td>569981918</td><td>Dr Mohd Askr</td><td>47383</td><td>Dr Nourah </td><td>48176</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>Dr Eyad </td><td>48649</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>Dr Rana </td><td>59764</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>Dr Saud</td><td>49303</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="colorectal" class="service-table">
+    <h2>Colorectal Surgery</h2>
+    <table class="directory-table">
+        <thead><tr><th>Junior Resident </th><th>Pager</th><th>Senior resident</th><th>Pager</th><th>SPECIALIST PHYSICIAN</th><th>Pager</th><th>Consultant </th><th>pager</th></tr></thead>
+        <tbody>
+<tr><td>DR ROSANA</td><td>41205</td><td>DR.TURKI</td><td>44498</td><td>Dr Ammar</td><td>49342</td><td>Dr Ashari </td><td>44214</td></tr>
+<tr><td>DR HAMAD</td><td>50689</td><td>DR.RASHEED</td><td></td><td>Dr Abdulmajed</td><td>40130</td><td>Dr Samar </td><td>47892</td></tr>
+<tr><td>DR ABDLH</td><td>46089</td><td></td><td></td><td>Dr Adi</td><td>43497</td><td>Dr Andres </td><td>47876</td></tr>
+<tr><td></td><td></td><td></td><td></td><td>Dr Alaa</td><td>4651</td><td>Dr Raha </td><td>42580</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="oncology" class="service-table">
+    <h2>Surgical Oncology</h2>
+    <table class="directory-table">
+        <thead><tr><th>Junior Resident </th><th>Pager</th><th>Senior resident</th><th>Pager</th><th>SPECIALIST PHYSICIAN</th><th>Pager</th><th>Consultant </th><th>pager</th></tr></thead>
+        <tbody>
+<tr><td>DR AFRAH</td><td>45877</td><td>DR ZOHA</td><td>48690</td><td>Dr Aymn</td><td>49201</td><td>Dr Ihssan </td><td>48825</td></tr>
+<tr><td>DR LATIFA</td><td>59547</td><td>DR ABDULMAJED</td><td>48132</td><td>Dr Yazed</td><td>47361</td><td>Dr Zyad </td><td>43795</td></tr>
+<tr><td>DR RAYAN</td><td>48197</td><td></td><td></td><td>Dr Ali</td><td>43328</td><td>Dr Khalid </td><td>42301</td></tr>
+<tr><td></td><td></td><td></td><td></td><td>Dr Sarah</td><td>567774516</td><td>Dr Haile </td><td>47606</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>Dr Ayman</td><td>40990</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section id="breast" class="service-table">
+    <h2>Breast &amp; Endocrine Surgery</h2>
+    <table class="directory-table">
+        <thead><tr><th>Junior Resident </th><th>Pager</th><th>Senior resident</th><th>Pager</th><th>SPECIALIST PHYSICIAN</th><th>Pager</th><th>Consultant </th><th>pager</th></tr></thead>
+        <tbody>
+<tr><td>Dr Hanan</td><td>59341</td><td>Dr RAWN</td><td>45961</td><td>Dr Anfal</td><td>42253</td><td>DR ALSOBHI</td><td>48142</td></tr>
+<tr><td>Dr Abdulh</td><td>45923</td><td>Dr RAHAF</td><td></td><td>Dr Khadejah</td><td>47219</td><td>DR AMAL</td><td>44673</td></tr>
+<tr><td>Dr Tariq</td><td></td><td></td><td></td><td>Dr Mohd</td><td>59605</td><td>DR WAFA</td><td>47228</td></tr>
+<tr><td>Dr Mohd</td><td>50280</td><td></td><td></td><td>Dr RAYAN</td><td>44635</td><td>DR FERS</td><td>49449</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td><td>DR OSAMA</td><td>46401</td></tr>
+        </tbody>
+    </table>
+</section>
+</body>
+</html>
