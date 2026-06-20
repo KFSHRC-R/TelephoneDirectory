@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Doctors</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f0f4f2; min-height: 100vh; }
+    header {
+      background: #005c2e;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    header a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 20px; line-height: 1; }
+    header a:hover { color: #fff; }
+    header h1 { color: #fff; font-size: 16px; font-weight: 600; }
+    .report-btn {
+      display: block;
+      text-align: center;
+      background: #f5c518;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin: 12px 16px 0;
+    }
+    .report-btn:hover { background: #e0b200; }
+    .toolbar {
+      background: #fff;
+      border-bottom: 1px solid #dde8e3;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .search-wrap { position: relative; margin-bottom: 10px; }
+    .search-wrap input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      font-size: 15px;
+      border: 1px solid #ccd;
+      border-radius: 8px;
+      outline: none;
+      font-family: inherit;
+      color: #1a1a1a;
+    }
+    .search-wrap input:focus { border-color: #005c2e; }
+    .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #999; font-size: 15px; }
+    .chips-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .chip {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid #dde8e3;
+      background: #f5f5f5;
+      color: #555;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .chip:hover { border-color: #005c2e; color: #005c2e; }
+    .chip.active-service { background: #005c2e; color: #fff; border-color: #005c2e; }
+    .chip.active-role-all  { background: #444; color: #fff; border-color: #444; }
+    .chip.active-role-jr   { background: #185fa5; color: #fff; border-color: #185fa5; }
+    .chip.active-role-sr   { background: #ba7517; color: #fff; border-color: #ba7517; }
+    .chip.active-role-sp   { background: #0f6e56; color: #fff; border-color: #0f6e56; }
+    .chip.active-role-co   { background: #993c1d; color: #fff; border-color: #993c1d; }
+    main { padding: 16px; }
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #005c2e;
+      margin-bottom: 12px;
+    }
+    .doctor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .doc-card {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid;
+      transition: transform 0.1s;
+    }
+    .doc-card:hover { transform: translateY(-1px); }
+    .doc-card.jr { background: #e6f1fb; border-color: #b5d4f4; }
+    .doc-card.sr { background: #faeeda; border-color: #fac775; }
+    .doc-card.sp { background: #e1f5ee; border-color: #9fe1cb; }
+    .doc-card.co { background: #faece7; border-color: #f5c4b3; }
+    .doc-card.hidden { display: none; }
+    .doc-role { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+    .doc-role.jr { color: #0c447c; }
+    .doc-role.sr { color: #633806; }
+    .doc-role.sp { color: #085041; }
+    .doc-role.co { color: #4a1b0c; }
+    .doc-name { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+    .doc-pager { font-size: 12px; color: #555; }
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid #dde8e3;
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .service-section { display: none; }
+    .service-section.active { display: block; }
+  </style>
+  <script>
+    let activeService = 'general';
+    let activeRole = 'all';
+
+    function switchService(id, el) {
+      activeService = id;
+      document.querySelectorAll('.service-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.chip.svc').forEach(c => c.classList.remove('active-service'));
+      el.classList.add('active-service');
+      applyRoleFilter();
+    }
+
+    function switchRole(role, el) {
+      activeRole = role;
+      document.querySelectorAll('.chip.role').forEach(c => {
+        c.classList.remove('active-role-all','active-role-jr','active-role-sr','active-role-sp','active-role-co');
+      });
+      const cls = role === 'all' ? 'active-role-all' : 'active-role-' + role;
+      el.classList.add(cls);
+      applyRoleFilter();
+    }
+
+    function applyRoleFilter() {
+      const section = document.getElementById(activeService);
+      section.querySelectorAll('.doc-card').forEach(card => {
+        if (activeRole === 'all' || card.dataset.role === activeRole) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+
+    function searchDoctors() {
+      const filter = document.getElementById('searchInput').value.toLowerCase();
+      document.querySelectorAll('.doc-card').forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.classList.toggle('hidden', !text.includes(filter));
+      });
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <a href="index.html">&#8592;</a>
+    <h1>Doctors</h1>
+  </header>
+  <a class="report-btn" href="https://docs.google.com/forms/d/e/1FAIpQLSdGJ35L7zMF5FGyhgAGRTk0yvmB-V3ewnJzt8hiVwUX4Zg_Ow/viewform?usp=dialog" target="_blank">Report</a>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" id="searchInput" onkeyup="searchDoctors()" placeholder="Search doctor name or pager...">
+    </div>
+    <div class="chips-label">Service</div>
+    <div class="chips">
+      <button class="chip svc active-service" onclick="switchService('general', this)">General Surgery</button>
+      <button class="chip svc" onclick="switchService('colorectal', this)">Colorectal Surgery</button>
+      <button class="chip svc" onclick="switchService('oncology', this)">Surgical Oncology</button>
+      <button class="chip svc" onclick="switchService('breast', this)">Breast &amp; Endocrine</button>
+    </div>
+    <div class="chips-label">Filter by role</div>
+    <div class="chips">
+      <button class="chip role active-role-all" onclick="switchRole('all', this)">All</button>
+      <button class="chip role" onclick="switchRole('jr', this)">Junior Resident</button>
+      <button class="chip role" onclick="switchRole('sr', this)">Senior Resident</button>
+      <button class="chip role" onclick="switchRole('sp', this)">Specialist</button>
+      <button class="chip role" onclick="switchRole('co', this)">Consultant</button>
+    </div>
+  </div>
+  <main>
+
+    <section id="general" class="service-section active">
+      <p class="section-title">General Surgery</p>
+      <div class="doctor-grid">
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Khalid</div><div class="doc-pager">Pager: 43220</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Razan</div><div class="doc-pager">Pager: 41124</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Abdulr</div><div class="doc-pager">Pager: 46766</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Amani</div><div class="doc-pager">Pager: 48385</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Mohd Askr</div><div class="doc-pager">Pager: 47383</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Alaa</div><div class="doc-pager">Pager: 45157</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Nourah</div><div class="doc-pager">Pager: 48176</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Eyad</div><div class="doc-pager">Pager: 48649</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Rana</div><div class="doc-pager">Pager: 59764</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Saud</div><div class="doc-pager">Pager: 49303</div></div>
+      </div>
+    </section>
+
+    <section id="colorectal" class="service-section">
+      <p class="section-title">Colorectal Surgery</p>
+      <div class="doctor-grid">
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Rosana</div><div class="doc-pager">Pager: 41205</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Hamad</div><div class="doc-pager">Pager: 50689</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Abdlh</div><div class="doc-pager">Pager: 46089</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Turki</div><div class="doc-pager">Pager: 44498</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Rasheed</div><div class="doc-pager">Pager: 506154172</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Ammar</div><div class="doc-pager">Pager: 49342</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Hajer</div><div class="doc-pager">Pager: 47388</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Abdumajed</div><div class="doc-pager">Pager: 40130</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Adi</div><div class="doc-pager">Pager: 43497</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Sarah</div><div class="doc-pager">Pager: 59139</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Alaa</div><div class="doc-pager">Pager: 46516</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Ashari</div><div class="doc-pager">Pager: 44214</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Samar</div><div class="doc-pager">Pager: 47892</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Raha</div><div class="doc-pager">Pager: 42580</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Sami</div><div class="doc-pager">Pager: 44434</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Huda</div><div class="doc-pager">Pager: 44372</div></div>
+      </div>
+    </section>
+
+    <section id="oncology" class="service-section">
+      <p class="section-title">Surgical Oncology</p>
+      <div class="doctor-grid">
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Afrah</div><div class="doc-pager">Pager: 45877</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Latifa</div><div class="doc-pager">Pager: 59547</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Rayan</div><div class="doc-pager">Pager: 48197</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Zoha</div><div class="doc-pager">Pager: 48690</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Abdulmajed</div><div class="doc-pager">Pager: 48132</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Ayman Azam</div><div class="doc-pager">Pager: 49201</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Yazed</div><div class="doc-pager">Pager: 47361</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Ali</div><div class="doc-pager">Pager: 43328</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Abdulaziz</div><div class="doc-pager">Pager: 47761</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Ihssan</div><div class="doc-pager">Pager: 48825</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Zyad</div><div class="doc-pager">Pager: 43795</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Khalid</div><div class="doc-pager">Pager: 42301</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Ayman</div><div class="doc-pager">Pager: 40990</div></div>
+      </div>
+    </section>
+
+    <section id="breast" class="service-section">
+      <p class="section-title">Breast &amp; Endocrine Surgery</p>
+      <div class="doctor-grid">
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Hanan</div><div class="doc-pager">Pager: 59341</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Abdulh</div><div class="doc-pager">Pager: 45923</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Tariq</div><div class="doc-pager">Pager: 43596</div></div>
+        <div class="doc-card jr" data-role="jr"><div class="doc-role jr">Junior Resident</div><div class="doc-name">Dr. Mohd</div><div class="doc-pager">Pager: 50280</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Rawn</div><div class="doc-pager">Pager: 45961</div></div>
+        <div class="doc-card sr" data-role="sr"><div class="doc-role sr">Senior Resident</div><div class="doc-name">Dr. Rahaf</div><div class="doc-pager">Pager: 506193388</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Anfal</div><div class="doc-pager">Pager: 42253</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Khadejah</div><div class="doc-pager">Pager: 47219</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Mohd</div><div class="doc-pager">Pager: 59605</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Rayan</div><div class="doc-pager">Pager: 44635</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Abdullah</div><div class="doc-pager">Pager: 50750</div></div>
+        <div class="doc-card sp" data-role="sp"><div class="doc-role sp">Specialist</div><div class="doc-name">Dr. Mohd Mansor</div><div class="doc-pager">Pager: 46072</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Alsobhi</div><div class="doc-pager">Pager: 48142</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Amal</div><div class="doc-pager">Pager: 44673</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Feras</div><div class="doc-pager">Pager: 49449</div></div>
+        <div class="doc-card co" data-role="co"><div class="doc-role co">Consultant</div><div class="doc-name">Dr. Osama</div><div class="doc-pager">Pager: 46401</div></div>
+      </div>
+    </section>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#185fa5;"></div>Junior Resident</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ba7517;"></div>Senior Resident</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0f6e56;"></div>Specialist</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#993c1d;"></div>Consultant</div>
+    </div>
+  </main>
+</body>
+</html>
