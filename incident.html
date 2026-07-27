@@ -255,11 +255,9 @@
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h2>Incident reported</h2>
-      <div style="margin:8px 0 2px;font-size:0.78rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b7280;">Request number</div>
-      <div id="reqNoText" style="font-size:2.6rem;font-weight:700;color:#0f6e46;line-height:1.05;">&mdash;</div>
-      <p id="successMsg" style="margin-top:8px;">Saved to the C3 Incidents sheet. Share this number so others can follow up.</p>
-      <a class="btn-primary" href="index.html">Back to portal now</a>
+      <h2>Submitted, thank you</h2>
+      <p>Taking you back to the main page&hellip;</p>
+      <a class="btn-primary" href="index.html">Back to main page</a>
     </div>
   </div>
 
@@ -389,12 +387,8 @@
         }
 
         if (data.result === 'success') {
-          document.getElementById('reqNoText').textContent = (data.requestNo != null ? data.requestNo : '');
-          if (data.photo === 'too_large') {
-            document.getElementById('successMsg').innerHTML = 'Report saved &mdash; note the number. The photo was too large to store; retake a closer/smaller one if needed.';
-          }
           document.getElementById('successOverlay').classList.add('show');
-          setTimeout(function () { window.location.href = 'index.html'; }, 6000);
+          setTimeout(function () { window.location.href = 'index.html'; }, 2000);
         } else {
           showError('Error: ' + (data.message || JSON.stringify(data)));
           btn.disabled = false; btn.textContent = 'Submit Report →';
