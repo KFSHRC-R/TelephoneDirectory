@@ -180,7 +180,7 @@
       <div class="form-title">Incident Report</div>
       <div class="room-badge">
         <span class="room-dot"></span>
-        <span id="room-label">No room selected</span>
+        <span id="room-label">No location selected</span>
       </div>
     </div>
 
@@ -190,12 +190,12 @@
       </div>
 
       <form id="incidentForm" onsubmit="handleSubmit(event)">
-        <!-- 1. Room -->
+        <!-- 1. Location -->
         <div class="field">
-          <label for="room">Room <span class="required">*</span></label>
+          <label for="room">Location <span class="required">*</span></label>
           <div class="select-wrap">
             <select id="room" required>
-              <option value="" disabled selected>Select room</option>
+              <option value="" disabled selected>Select location</option>
             </select>
           </div>
         </div>
@@ -265,21 +265,36 @@
     // ==== 1. Paste your deployed Google Apps Script Web App URL here (ends in /exec) ====
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwP4u0f-9r9rFtCLxGUKtHn_Zf64iRzgl9hUj_piNk3lkh5EnqJROAQBc_h99d8fl2tBQ/exec";
 
-    // Build the room dropdown: 02, 04, 06 ... 68 (even numbers)
-    (function buildRooms() {
+    // Build the Location dropdown: numbered rooms (02..68) + named areas
+    (function buildLocations() {
       const sel = document.getElementById('room');
+
+      const roomsGroup = document.createElement('optgroup');
+      roomsGroup.label = 'Rooms';
       for (let n = 2; n <= 68; n += 2) {
         const v = String(n).padStart(2, '0');
         const opt = document.createElement('option');
-        opt.value = v; opt.textContent = v;
-        sel.appendChild(opt);
+        opt.value = v; opt.textContent = 'Room ' + v;
+        roomsGroup.appendChild(opt);
       }
+      sel.appendChild(roomsGroup);
+
+      const areas = ['Head Nurse Office', 'Nursing Station 1', 'Nursing Station 2', 'Physician Room', 'Conference Room'];
+      const areaGroup = document.createElement('optgroup');
+      areaGroup.label = 'Areas';
+      areas.forEach(function (name) {
+        const opt = document.createElement('option');
+        opt.value = name; opt.textContent = name;
+        areaGroup.appendChild(opt);
+      });
+      sel.appendChild(areaGroup);
     })();
 
-    // Update the room badge as the nurse picks a room
+    // Update the location badge as the nurse picks a location
     document.getElementById('room').addEventListener('change', function () {
       const label = document.getElementById('room-label');
-      label.textContent = this.value ? ('Room ' + this.value) : 'No room selected';
+      const opt = this.options[this.selectedIndex];
+      label.textContent = this.value ? opt.textContent : 'No location selected';
     });
 
     // Force Staff ID to uppercase F
@@ -347,7 +362,7 @@
       const incident = document.getElementById('incident').value.trim();
       const staffId = document.getElementById('staffid').value.trim().toUpperCase();
 
-      if (!room) { showError('Please select a room.'); return; }
+      if (!room) { showError('Please select a location.'); return; }
       if (!incident) { showError('Please describe the incident.'); return; }
       if (!/^F[0-9]+$/.test(staffId)) { showError('Staff ID must start with F followed by numbers (e.g. F12345).'); return; }
       if (!photoFile) { showError('Please take or choose a photo of the problem.'); return; }
