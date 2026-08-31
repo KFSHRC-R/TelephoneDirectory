@@ -175,5 +175,29 @@
   </main>
 
   <footer>King Faisal Specialist Hospital &amp; Research Centre</footer>
+  <!-- AUTO-REFRESH v1 : reload if this page's file changes on the server, so screens left open stay current -->
+  <script>
+  (function () {
+    var url = location.pathname.split('#')[0].split('?')[0];
+    var baseline = null, pending = false;
+    function sig(h) { return h.get('ETag') || h.get('Last-Modified') || null; }
+    function check() {
+      fetch(url + '?_=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
+        .then(function (r) {
+          if (!r.ok) return;
+          var s = sig(r.headers);
+          if (!s) return;
+          if (baseline === null) { baseline = s; return; }
+          if (s !== baseline) { if (document.hidden) location.reload(); else pending = true; }
+        })
+        .catch(function () {});
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (pending && !document.hidden) location.reload();
+    });
+    check();
+    setInterval(function () { if (pending) location.reload(); else check(); }, 90000);
+  })();
+  </script>
 </body>
 </html>
